@@ -1,5 +1,7 @@
 package com.resume.backend.resume_ai_backend.service;
 
+import java.io.IOException;
+
 public interface ResumeService {
-    String generateResumeResponse(String userResumeDescription);
+    String generateResumeResponse(String userResumeDescription) throws IOException;
 }
