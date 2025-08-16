@@ -27,9 +27,15 @@ public class ResumeServiceImpl implements ResumeService{
 
         String promptContent=this.putValuesToTemplate(promptString,Map.of("userDescription",userResumeDescription));
 
-        Prompt prompt=new Prompt(promptContent);
+        Prompt prompt=new Prompt("hello");
+
+        var rawResponse = chatClient.prompt(prompt).call();
+        //System.out.println("RAW RESPONSE: " + rawResponse);
+        System.out.println("Content: " + rawResponse.content());
+
 
         String response=chatClient.prompt(prompt).call().content();
+
         return response;
     }
     String loadPromptFromFile(String filename) throws IOException {
