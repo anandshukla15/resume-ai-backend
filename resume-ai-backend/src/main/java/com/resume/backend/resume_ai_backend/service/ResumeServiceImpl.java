@@ -1,5 +1,6 @@
 package com.resume.backend.resume_ai_backend.service;
 
+import org.json.JSONObject;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.core.io.ClassPathResource;
@@ -27,15 +28,15 @@ public class ResumeServiceImpl implements ResumeService{
 
         String promptContent=this.putValuesToTemplate(promptString,Map.of("userDescription",userResumeDescription));
 
-        Prompt prompt=new Prompt("hello");
+        Prompt prompt=new Prompt(promptContent);
 
-        var rawResponse = chatClient.prompt(prompt).call();
-        //System.out.println("RAW RESPONSE: " + rawResponse);
-        System.out.println("Content: " + rawResponse.content());
+//        var rawResponse = chatClient.prompt(prompt).call();
+//        System.out.println("RAW RESPONSE: " + rawResponse);
+//        System.out.println("Content: " + rawResponse.content());
 
 
         String response=chatClient.prompt(prompt).call().content();
-
+System.out.println(response);
         return response;
     }
     String loadPromptFromFile(String filename) throws IOException {
@@ -48,6 +49,22 @@ public class ResumeServiceImpl implements ResumeService{
             template=template.replace("{{"+entry.getKey()+"}}",entry.getValue());
         }
         return  template;
+    }
+
+    public  static JSONObject parseMultipleResponses(String response){
+        JSONObject jsonResponse=new JSONObject();
+
+        int thinkStart=response.indexOf("<think")+7;
+        int thinkEnd=response.lastIndexOf("</think");
+        if(thinkStart!=-1 && thinkEnd!=-1){
+            String thinkContent=response.substring(thinkStart,thinkEnd).trim();
+            jsonResponse.put("think",thinkContent);
+        }else{
+            jsonResponse.put("think",JSONObject.NULL);
+        }
+
+
+        return jsonResponse;
     }
 
 }
