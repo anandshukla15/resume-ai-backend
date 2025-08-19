@@ -23,7 +23,7 @@ public class ResumeServiceImpl implements ResumeService{
 
 
     @Override
-    public String generateResumeResponse(String userResumeDescription) throws IOException {
+    public JSONObject generateResumeResponse(String userResumeDescription) throws IOException {
 
         String promptString=this.loadPromptFromFile("resume_prompt.txt");
 
@@ -40,7 +40,7 @@ public class ResumeServiceImpl implements ResumeService{
 //System.out.println(response);
 
        JSONObject jsonObject= parseMultipleResponses(response);
-        return response;
+        return jsonObject;
     }
     String loadPromptFromFile(String filename) throws IOException {
         Path path =new ClassPathResource(filename).getFile().toPath();
