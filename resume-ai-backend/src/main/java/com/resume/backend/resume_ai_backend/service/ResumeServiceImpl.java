@@ -1,5 +1,6 @@
 package com.resume.backend.resume_ai_backend.service;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -36,7 +37,9 @@ public class ResumeServiceImpl implements ResumeService{
 
 
         String response=chatClient.prompt(prompt).call().content();
-System.out.println(response);
+//System.out.println(response);
+
+       JSONObject jsonObject= parseMultipleResponses(response);
         return response;
     }
     String loadPromptFromFile(String filename) throws IOException {
@@ -61,6 +64,22 @@ System.out.println(response);
             jsonResponse.put("think",thinkContent);
         }else{
             jsonResponse.put("think",JSONObject.NULL);
+        }
+
+        int jsonStart=response.indexOf("```json")+7;
+        int jsonEnd=response.lastIndexOf("```");
+        if(jsonStart!=-1 && jsonEnd !=-1 && jsonStart<jsonEnd){
+            String jsonContent=response.substring(jsonStart,jsonEnd).trim();
+            try{
+                JSONObject dataContent= new JSONObject(jsonContent);
+                jsonResponse.put("data",dataContent);
+            } catch (Exception e) {
+                jsonResponse.put("data",JSONObject.NULL);
+                System.err.println("invalid json format in response "+ e.getMessage());
+
+            }
+        }else{
+            jsonResponse.put("data",JSONObject.NULL);
         }
 
 
