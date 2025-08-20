@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
@@ -23,11 +24,11 @@ public class ResumeController {
 
 
      @PostMapping("/generate")
-     public ResponseEntity<JSONObject>getResumeData(
+     public ResponseEntity<Map<String,Object>>getResumeData(
              @RequestBody ResumeRequest resumeRequest
      ) throws IOException {
-     JSONObject jsonObject=resumeService.generateResumeResponse(resumeRequest.userDescription());
-     return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+          Map<String,Object>stringObjectMap= resumeService.generateResumeResponse(resumeRequest.userDescription());
+     return new ResponseEntity<>(stringObjectMap, HttpStatus.OK);
      }
 
 }

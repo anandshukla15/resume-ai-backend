@@ -1,5 +1,6 @@
 package com.resume.backend.resume_ai_backend.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.ai.chat.client.ChatClient;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -23,7 +25,7 @@ public class ResumeServiceImpl implements ResumeService{
 
 
     @Override
-    public JSONObject generateResumeResponse(String userResumeDescription) throws IOException {
+    public Map<String,Object> generateResumeResponse(String userResumeDescription) throws IOException {
 
         String promptString=this.loadPromptFromFile("resume_prompt.txt");
 
@@ -39,8 +41,8 @@ public class ResumeServiceImpl implements ResumeService{
         String response=chatClient.prompt(prompt).call().content();
 //System.out.println(response);
 
-       JSONObject jsonObject= parseMultipleResponses(response);
-        return jsonObject;
+      Map<String,Object> stringObjectMap=parseMultipleResponses(response);
+        return stringObjectMap;
     }
     String loadPromptFromFile(String filename) throws IOException {
         Path path =new ClassPathResource(filename).getFile().toPath();
@@ -54,8 +56,8 @@ public class ResumeServiceImpl implements ResumeService{
         return  template;
     }
 
-    public  static JSONObject parseMultipleResponses(String response){
-        JSONObject jsonResponse=new JSONObject();
+    public  static Map<String,Object> parseMultipleResponses(String response){
+        Map<String,Object> jsonResponse=new HashMap<>();
 
         int thinkStart=response.indexOf("<think")+7;
         int thinkEnd=response.lastIndexOf("</think");
@@ -63,7 +65,7 @@ public class ResumeServiceImpl implements ResumeService{
             String thinkContent=response.substring(thinkStart,thinkEnd).trim();
             jsonResponse.put("think",thinkContent);
         }else{
-            jsonResponse.put("think",JSONObject.NULL);
+            jsonResponse.put("think",null);
         }
 
         int jsonStart=response.indexOf("```json")+7;
@@ -71,15 +73,16 @@ public class ResumeServiceImpl implements ResumeService{
         if(jsonStart!=-1 && jsonEnd !=-1 && jsonStart<jsonEnd){
             String jsonContent=response.substring(jsonStart,jsonEnd).trim();
             try{
-                JSONObject dataContent= new JSONObject(jsonContent);
+                ObjectMapper objectMapper=new ObjectMapper();
+                Map<String,Object> dataContent= objectMapper.readValue(jsonContent,Map.class);
                 jsonResponse.put("data",dataContent);
             } catch (Exception e) {
-                jsonResponse.put("data",JSONObject.NULL);
+                jsonResponse.put("data",null);
                 System.err.println("invalid json format in response "+ e.getMessage());
 
             }
         }else{
-            jsonResponse.put("data",JSONObject.NULL);
+            jsonResponse.put("data",null);
         }
 
 
